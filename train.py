@@ -1,3 +1,4 @@
+import os, argparse
 import torch 
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -14,10 +15,10 @@ CONFIG = {
     "epochs": 50,
     "batch_size": 64,
     "lr": 1e-4,
-    "langevin_steps": 60,
+    "langevin_steps": 1,
     "langevin_step_size": 0.01,
     "l2_reg_strenght": 0.1,
-    "model_save_path": "sudoku_ebm.pth",
+    # "model_save_path": "sudoku_ebm.pth",
     "buffer_size": 10_000,
     "replay_probability": 0.95
 }
@@ -49,9 +50,11 @@ def generate_negative_samples(model, initial_board, puzzle_mask, steps, step_siz
 
 
 
-def main():
+def main(args):
     device = torch.device(CONFIG["device"])
     print(f"Using device: {device}")
+    
+    model_path = os.path.join(args.save_dir, "best_ebm.pt")
     
     sudoku_data = dataset.FileDataset("dataset_train.npy")
     dataloader = DataLoader(sudoku_data, batch_size=CONFIG['batch_size'], shuffle=True)
@@ -121,8 +124,13 @@ def main():
         
         if avg_loss < best_loss:
             best_loss = avg_loss
-            torch.save(model.state_dict(), CONFIG["model_save_path"])
-            print(f"Model saved to {CONFIG['model_save_path']}")
-            
+            torch.save(model.state_dict(), model_path)
+            print(f"Model saved to {model_path}")
+
+
 if __name__=="__main__":
-    main()
+    p = argparse.ArgumentParser()
+    p.add_argument("--save_dir",     type=str,   default="/content/drive/MyDrive/ebm_runs")
+    args = p.parse_args()
+    
+    main(args)
