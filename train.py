@@ -15,7 +15,7 @@ CONFIG = {
     "epochs": 50,
     "batch_size": 64,
     "lr": 1e-4,
-    "langevin_steps": 1,
+    "langevin_steps": 60,
     "langevin_step_size": 0.01,
     "l2_reg_strenght": 0.1,
     # "model_save_path": "sudoku_ebm.pth",
