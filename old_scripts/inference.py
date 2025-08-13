@@ -8,7 +8,7 @@ import sudoku_dataset as dataset
 ###! Configuration for Inference
 CONFIG = {
     "device": "cuda" if torch.cuda.is_available() else "cpu",
-    "model_path": "sudoku_ebm.pth",  # Path to your saved model
+    "model_path": "best_ebm.pt",  # Path to your saved model
     "test_data_path": "dataset_test.npy", # Path to your dataset
     "solver_steps": 2000,          # More steps for higher quality solutions
     "solver_step_size": 0.1,
@@ -41,30 +41,6 @@ def generate_solution(model, initial_board, puzzle_mask, steps, step_size):
         x.data = x_probs.view_as(x)
         
     return x.detach()
-
-def convert_to_board(one_hot_tensor):
-    """Converts a (1, 9, 81) one-hot tensor to a 9x9 numpy board."""
-    if one_hot_tensor.dim() > 3: # Handles batch dimension
-        one_hot_tensor = one_hot_tensor.squeeze(0)
-    
-    digits = torch.argmax(one_hot_tensor, dim=0) # Get the index of the '1' for each cell
-    board = digits.view(9, 9).cpu().numpy()
-    return board + 1 # Convert from 0-8 indices to 1-9 digits
-
-
-def print_board(board_numpy, title=""):
-    """Prints a 9x9 numpy board in a readable format."""
-    print(title)
-    for i in range(9):
-        if i % 3 == 0 and i != 0:
-            print("- - - - - - - - - - -")
-        for j in range(9):
-            if j % 3 == 0 and j != 0:
-                print("| ", end="")
-            digit = board_numpy[i, j]
-            print(f"{digit if digit != 0 else '.'} ", end="")
-        print()
-    print("-" * 25)
 
 
 def main():
@@ -102,6 +78,7 @@ def main():
     print_board(puzzle_board, "Original Puzzle:")
     print_board(generated_board, "Model's Generated Solution:")
     print_board(solution_board, "Ground Truth Solution:")
+
 
     # Check if the solution is correct
     if np.array_equal(generated_board, solution_board):
